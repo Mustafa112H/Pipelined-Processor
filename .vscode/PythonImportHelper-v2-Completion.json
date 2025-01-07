@@ -1,0 +1,11 @@
+[
+    {
+        "label": "InstructionEncoder",
+        "kind": 6,
+        "importPath": "Untitled-1",
+        "description": "Untitled-1",
+        "peekOfCode": "class InstructionEncoder:\n    def __init__(self):\n        self.register_map = {f\"R{i}\": format(i, '03b') for i in range(8)}\n    def encode_r_type(self, func, rd, rs, rt):\n        opcode = \"0000\"  # Opcode for R-Type instructions\n        func_map = {\n            \"AND\": \"000\",\n            \"ADD\": \"001\",\n            \"SUB\": \"010\",\n            \"SLL\": \"011\",",
+        "detail": "Untitled-1",
+        "documentation": {}
+    }
+]

@@ -36,7 +36,9 @@ module Top_tb;
         reset = 0; // Deassert reset
 
         // Run simulation for a specified duration
-        #500; // Let the simulation run for 500ns
+        #5000; // Let the simulation run for 500ns
+         // Print memory contents
+        uut.dmem.printMemory();
 
         $finish; // End simulation
     end
@@ -84,7 +86,7 @@ module InstructionMemory(input [15:0] A, output reg [15:0] RD);
 
 
     always @* begin
-        RD = memory[A[5:0]];
+        RD = memory[A];
     end
 endmodule
 
@@ -111,6 +113,19 @@ module controller(
 
 endmodule
 
+`define RTYPE   4'b0000
+`define ANDI    4'b0010
+`define ADDI    4'b0011
+`define BEQ     4'b0110
+`define BNE     4'b0111
+`define FOR     4'b1000
+`define LOAD    4'b0100
+`define STORE   4'b0101
+`define JMP     3'b000
+`define CALL    3'b001
+`define RET  3'b010
+`define JTYPE   4'b0001
+
 module mainDec(input [3:0] opcode, input [2:0]func, output ForSignal, output UpdateRR, output JMP, output SelectPCSrc,
 	output Load, 
 	output RType,
@@ -121,29 +136,24 @@ module mainDec(input [3:0] opcode, input [2:0]func, output ForSignal, output Upd
 	output Branch, 
 	output WriteToMEM,
 	output [1:0] AluOp);	   
-	
-	logic [13:0] controls;
-	assign {ForSignal, UpdateRR, JMP, SelectPCSrc, Load, RType, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM, AluOp} = controls;
 
-	
-	always@* begin
-        case(opcode)
-            4'b0000: controls <=14'b00x001x10x0000;     //RTYPE
-            4'b0010: controls <=14'b00x000111x0010;     //ANDI
-            4'b0011: controls <=14'b00x000011x0001;     //ADDI
-            4'b0110: controls <=14'b00x0x0x0001011;     //BEQ
-            4'b0111: controls <=14'b00x0x0x0011011;     //BNE 
-            4'b1000: controls <=14'b11x000x10x0011;     //FOR
-            4'b0100: controls <=14'b000010011x0001;     //Load
-            4'b0101: controls <=14'b000000001x0101;     //Store
-            4'b0001:
-            case (func)
-                3'b000: controls <= 14'b0011xxx0xx00xx;//JMP
-                3'b001: controls <= 14'b0111xxx0xx00xx;//CALL 
-                3'b010: controls <= 14'b0001xxx00x00xx;//Return
-            endcase
-        endcase
-    end
+    assign ForSignal = (opcode == `FOR);
+    assign UpdateRR = ((opcode == `FOR) ^ (opcode == `JTYPE && func == `CALL));
+    assign JMP = (opcode == `JTYPE && (func == `CALL ^  func == `JMP));
+    assign SelectPCSrc = (opcode == `JTYPE);
+    assign Load = (opcode ==`LOAD);
+    assign RType = (opcode == `RTYPE); 
+    assign Logical = (opcode != `ADDI);
+    assign WriteToReg = (opcode != `JTYPE && opcode != `BEQ && opcode != `BNE && opcode != `STORE);
+    assign IMM = (opcode == `ADDI ^ opcode ==`ANDI ^ opcode == `LOAD ^ opcode == `STORE);
+    assign BNE = (opcode == `BNE);
+    assign Branch = (opcode == `BEQ ^ opcode == `BNE);
+    assign WriteToMEM = (opcode == `STORE);
+    assign AluOp = (opcode == `RTYPE) ? 2'b00 :                  // RTYPE
+                   (opcode == `ANDI)  ? 2'b10 :                  // ANDI
+                   (opcode == `ADDI ^ opcode == `LOAD ^ opcode == `STORE)  ? 2'b01 :                  // ADDI
+                   2'b11;       
+
 endmodule
 
 
@@ -178,16 +188,28 @@ module DataMemory(input [15:0] A, input [15:0] WD, input WE, CLK, output reg [15
         initial begin  
         $readmemb("Data.txt", memory); //this will read the file to initialize the memory
         end
+        always @(negedge CLK) begin
+        RD = memory[A];  // Read memory at address A
+        end
 
      always @ (posedge CLK) begin
          if (WE == 1)
              begin
-                    memory[A[5:0]] = WD;
+                    memory[A] = WD;
              end
-        else begin
-            RD = memory[A[5:0]];
-            end 
         end 
+  // Task to print memory contents
+    task printMemory;
+        integer i;
+        begin
+            $display("----- Memory Contents -----");
+            for (i = 0; i < 64; i = i + 1) begin
+                $display("Memory[%0d] = %0d", i, $signed(memory[i]));
+            end
+            $display("---------------------------");
+        end
+    endtask
+
 endmodule
 
 module RegisterFile (
@@ -226,7 +248,6 @@ output reg [15:0] RD2 // Read Data Register
         RD2 = RegisterFile[A2];
     end
 
-
 endmodule
 
 
@@ -257,9 +278,9 @@ module ALU(
         case (alucontrol)
             3'b000: Answer = R1 & R2;   // AND
             3'b001: Answer = R1 + R2;  // Add
-            3'b010: Answer = R1 - R2;  // Subtract
-            3'b011: Answer = R1 << R2; // Shift Left Logical
-            3'b100: Answer = R1 >> R2; // Shift Right Logical
+            3'b010: Answer = R2 - R1;  // Subtract
+            3'b011: Answer = R2 << R1; // Shift Left Logical
+            3'b100: Answer = R2 >> R1; // Shift Right Logical
             default: Answer = 16'bxxxxxxxxxxxxxx; // Default to addition
         endcase
 

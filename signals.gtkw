@@ -1,0 +1,58 @@
+[*]
+[*] GTKWave Analyzer v3.3.108 (w)1999-2020 BSI
+[*] Mon Jan 06 22:12:00 2025
+[*]
+[dumpfile] "C:\Users\hebam\OneDrive\Desktop\Pipelined-Processor\waveform.vcd"
+[dumpfile_mtime] "Mon Jan 06 22:03:26 2025"
+[dumpfile_size] 101565
+[savefile] "C:\Users\hebam\OneDrive\Desktop\signals.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] 245 196
+*-12.000000 12220 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] Top_tb.
+[treeopen] Top_tb.uut.
+[treeopen] Top_tb.uut.p1.
+[treeopen] Top_tb.uut.p1.c.
+[treeopen] Top_tb.uut.p1.data.
+[sst_width] 254
+[signals_width] 194
+[sst_expanded] 1
+[sst_vpaned_height] 156
+@28
+Top_tb.reset
+Top_tb.clk
+@22
+Top_tb.uut.PC[15:0]
+Top_tb.uut.p1.data.pc_next[15:0]
+Top_tb.uut.p1.instr[15:0]
+Top_tb.uut.readData[15:0]
+Top_tb.DataAdr[15:0]
+Top_tb.writeData[15:0]
+@28
+Top_tb.memwrite
+Top_tb.uut.p1.AluControl[2:0]
+@22
+Top_tb.uut.p1.data.alu.R1[15:0]
+Top_tb.uut.p1.data.alu.R2[15:0]
+Top_tb.uut.p1.data.alu.Answer[15:0]
+Top_tb.uut.p1.AluOut[15:0]
+@28
+Top_tb.uut.p1.IMM
+Top_tb.uut.p1.JMP
+Top_tb.uut.p1.Load
+Top_tb.uut.p1.Branch
+Top_tb.uut.p1.ForSignal
+Top_tb.uut.p1.Rtype
+Top_tb.uut.p1.WriteToReg
+Top_tb.uut.p1.data.reg_file.A1[2:0]
+Top_tb.uut.p1.data.reg_file.A2[2:0]
+Top_tb.uut.p1.data.reg_file.A3[2:0]
+@22
+Top_tb.uut.p1.data.reg_file.RD1[15:0]
+Top_tb.uut.p1.data.reg_file.RD2[15:0]
+Top_tb.uut.p1.data.reg_file.WD3[15:0]
+@29
+Top_tb.uut.p1.data.reg_file.WE3
+[pattern_trace] 1
+[pattern_trace] 0
