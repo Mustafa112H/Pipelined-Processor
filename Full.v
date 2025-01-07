@@ -620,7 +620,7 @@ module DataPath(
     wire [15: 0] mux_out;
     Mux2x1 mux_pc_src(
         .I0(pc_plus_1),
-        .I1(reg_out2),
+        .I1(reg_out1),
         .Sel(and_out),
         .out(mux_out)
     );
@@ -631,11 +631,12 @@ module DataPath(
     // add branch and pc + 1
     wire [15: 0] branch_extended_add_pc_plus_1;
     Adder adder_branch_pc_plus_1(
-        .In1(pc_plus_1),
+        .In1(pc_out),
         .In2(branch_extended),
         .out(branch_extended_add_pc_plus_1)
     );
     // RR
+
     
     // RR current value
     wire [15: 0] rr_current;
