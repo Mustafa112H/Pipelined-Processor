@@ -16,7 +16,7 @@ class InstructionEncoder:
         
         return opcode + self.register_map[rd] + self.register_map[rs] + self.register_map[rt] + func_map[func]
 
-    def encode_i_type(self, opcode, rs, rt, imm):
+    def encode_i_type(self, opcode, rs, rt, imm=None):
         opcode_map = {
             "ANDI": "0010",
             "ADDI": "0011",
@@ -24,11 +24,15 @@ class InstructionEncoder:
             "SW": "0101",
             "BEQ": "0110",
             "BNE": "0111",
-            "FOR": "1000",
+            "FOR": "1000",  # Handle FOR opcode here
         }
         if opcode not in opcode_map:
             raise ValueError("Invalid I-Type opcode")
 
+        # Special handling for "FOR" opcode: set immediate value to 0
+        if opcode == "FOR":
+            imm = 0  # Set immediate field to 0 for FOR instructions
+        
         # Sign-extend the immediate value for instructions like LW and SW
         if opcode in ["LW", "SW", "BEQ", "BNE"]:
             imm_bin = format((imm + (1 << 6)) % (1 << 6), '06b')  # 6-bit signed immediate
@@ -47,7 +51,11 @@ class InstructionEncoder:
         if func not in func_map:
             raise ValueError("Invalid J-Type function")
 
-        offset_bin = format(offset & 0x1FF, '09b')  # 9-bit offset
+        if func == "RET":
+            offset_bin = "000000000"  # Set 9-bit offset to zero for RET
+        else:
+            offset_bin = format(offset & 0x1FF, '09b')  # 9-bit offset for other functions
+    
         return opcode + offset_bin + func_map[func]
 
     def encode_instruction(self, instruction):
@@ -74,25 +82,35 @@ class InstructionEncoder:
             if len(parts) < 4:
                 raise ValueError(f"Malformed I-Type instruction: {instruction}")
             return self.encode_i_type(parts[0], parts[1], parts[2], int(parts[3]))
-        elif instr_type in ["JMP", "CALL", "RET"]:
+        elif instr_type in ["JMP", "CALL"]:
             if len(parts) < 2:
                 raise ValueError(f"Malformed J-Type instruction: {instruction}")
             return self.encode_j_type(parts[0], int(parts[1]))
+        elif instr_type == "RET":
+            # Special case for RET: No offset is needed, set to 0
+            return self.encode_j_type(parts[0], 0)  # Use 0 as the offset for RET
+        elif instr_type == "EXIT":
+            # Handle the EXIT instruction as a 16-bit exit signal but don't stop processing
+            return "1111111111111111"  # 16-bits for EXIT instruction
+        elif instr_type == "FOR":
+            # Special handling for the FOR instruction
+            return self.encode_i_type(instr_type, parts[1], parts[2], 0)  # Immediate field is 0 for FOR
         else:
             raise ValueError(f"Invalid instruction type: {instruction}")
-
 
     def process_file(self, input_file, output_file):
         with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
             for line in infile:
-                line = line.strip()
-                if not line or line.startswith("#"):  # Skip empty lines or comments
-                    continue
-                try:
-                    machine_code = self.encode_instruction(line)
-                    outfile.write(machine_code + "\n")
-                except ValueError as e:
-                    outfile.write(f"Error: {e} in instruction: {line}\n")
+                line = line.rstrip()  # Remove only the trailing newline/whitespace
+                if line == "" or line.startswith("#"):  # Preserve empty lines or comments
+                    outfile.write("0000\n")  # Preserve empty lines
+                else:
+                    try:
+                        machine_code = self.encode_instruction(line)
+                        outfile.write(machine_code + "\n")
+                    except ValueError as e:
+                        outfile.write(f"Error: {e} in instruction: {line}\n")
+
 
 # Example usage
 if __name__ == "__main__":

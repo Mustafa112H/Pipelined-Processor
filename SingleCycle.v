@@ -20,22 +20,6 @@ module Top_tb;
 
     // Clock generation: toggle every 5ns for a 10ns period
     always #5 clk = ~clk;
-    always begin
-        #5;
-        if (uut.instr == 16'b1111111111111111) begin
-            $display("Successfully Exited");
-            uut.imem.print_memory();
-            uut.dmem.printMemory();
-            $finish;
-        end
-        if(uut.instr == 0) begin
-            $display("PC = %0b", uut.PC);
-            $display("Invalid Instruction ..... Terminating!");
-            uut.imem.print_memory();
-            uut.dmem.printMemory();
-            $finish;// Terminate the simulation
-        end
-    end 
 
     initial begin
         // Initialize signals
@@ -54,9 +38,7 @@ module Top_tb;
         // Run simulation for a specified duration
         #5000; // Let the simulation run for 500ns
          // Print memory contents
-            uut.imem.print_memory();
-            uut.dmem.printMemory();
-        
+        uut.dmem.printMemory();
 
         $finish; // End simulation
     end
@@ -106,19 +88,6 @@ module InstructionMemory(input [15:0] A, output reg [15:0] RD);
     always @* begin
         RD = memory[A];
     end
-    task print_memory;
-    integer i;
-    begin
-        // Loop through all memory locations and print the content
-        $display("\n----------Instruction Memory-----------------");
-        for (i = 0; i < 64; i = i + 1) begin
-              // Set the address to i
-            #1;  // Wait for the memory to resolve
-            $display("MemoryInstr[%0d] = %b", i,memory[i] );  // Print memory content
-        end
-        $display("----------------------------------------------");
-    end
-    endtask
 endmodule
 
 module controller(
@@ -174,7 +143,7 @@ module mainDec(input [3:0] opcode, input [2:0]func, output ForSignal, output Upd
     assign SelectPCSrc = (opcode == `JTYPE);
     assign Load = (opcode ==`LOAD);
     assign RType = (opcode == `RTYPE); 
-    assign Logical = (opcode == `ANDI);
+    assign Logical = (opcode != `ADDI);
     assign WriteToReg = (opcode != `JTYPE && opcode != `BEQ && opcode != `BNE && opcode != `STORE);
     assign IMM = (opcode == `ADDI ^ opcode ==`ANDI ^ opcode == `LOAD ^ opcode == `STORE);
     assign BNE = (opcode == `BNE);
@@ -233,7 +202,7 @@ module DataMemory(input [15:0] A, input [15:0] WD, input WE, CLK, output reg [15
     task printMemory;
         integer i;
         begin
-            $display("\n----- Memory Contents -----");
+            $display("----- Memory Contents -----");
             for (i = 0; i < 64; i = i + 1) begin
                 $display("Memory[%0d] = %0d", i, $signed(memory[i]));
             end
