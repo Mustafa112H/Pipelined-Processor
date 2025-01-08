@@ -63,14 +63,8 @@ module Top_tb;
 
         $finish; // End simulation
     end
-
 endmodule
 
-// Pipelined Stages
-
-// Stage 1: Instruction Fetch
-
-// Stage 2: Instruction Decode
 module DecodeStage(
     input rst,
     input clk,
@@ -134,51 +128,6 @@ module DecodeStage(
             branchOut = branchIn;
             writeMemoryOut = writeMemoryIn;
             loadOut = loadIn;
-        end
-    end
-endmodule
-
-// Stage 3: Execute
-module ExecuteStage(
-    input clk,
-    input rst,
-    input [15: 0] aluIn, 
-    input [15: 0] DataIn, 
-    input [2: 0] WB2in, 
-    input writeMemoryIn,
-    input forSignalIn,
-    input loadIn, 
-    input writeRegIn,   
-    output [15: 0] aluOut,
-    output [15: 0] DataOut,
-    output [2: 0] WB2out,
-    output writeMemoryOut,
-    output forSignalOut,
-    output loadOut,
-    output writeRegOut
-    );
-
-    reg [15: 0] aluOut, DataOut;
-    reg [2: 0] WB2out;
-    reg writeMemoryOut, forSignalOut, loadOut, writeRegOut;
-    
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            aluOut = 16'h0000;
-            DataOut = 16'h0000;
-            WB2out = 16'h0000;
-            writeMemoryOut = 0;
-            forSignalOut = 0;
-            loadOut = 0;
-            writeRegOut = 0;
-        end else begin
-            aluOut = aluIn;
-            DataOut = DataIn;
-            WB2out = WB2in;
-            writeMemoryOut = writeMemoryIn;
-            forSignalOut = forSignalIn;
-            loadOut = loadIn;
-            writeRegOut = writeRegIn;
         end
     end
 endmodule

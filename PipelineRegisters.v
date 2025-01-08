@@ -1,4 +1,4 @@
-module PC (
+module PCFetch (
     input clk,
     input rst,
     input [15:0] pc_next,
@@ -14,8 +14,8 @@ module PC (
     end
 
 endmodule
-//Fetch
-module FetchStage(input [15:0] InstructionIn,
+
+module DecodeStage(input [15:0] InstructionIn,
 input StallD,
 input CLK,
 input Reset,
