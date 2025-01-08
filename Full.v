@@ -73,10 +73,10 @@ module DecodeStage(
     input clk,
     input [15: 0] out1in, 
     input [15: 0] out2in,
-    input [15: 0] wb1in,
+    input [2: 0] wb1in,
     input [15: 0] extin,
-    input forSig,
-    input writeRegister,
+    input forSignalIn,
+    input writeRegIn,
     input [2: 0] aluControl,
     input BNEin,
     input IMMin,
@@ -85,9 +85,9 @@ module DecodeStage(
     input loadIn,
     output [15: 0] out1out,
     output [15: 0] out2out,
-    output [15: 0] wb1out,
+    output [2: 0] wb1out,
     output [15: 0] extout,
-    output forSignal,
+    output forSignalOut,
     output writeRegOut,
     output [2: 0] aluControlOut,
     output BNEOut,
@@ -97,9 +97,11 @@ module DecodeStage(
     output loadOut
 );
 
+
     reg [15: 0] out1out, out2out, wb1out, extout;
-    reg forSignal, writeRegOut, BNEOut, IMMOut, branchOut, writeMemoryOut, loadOut;
+    reg forSignalOut, writeRegOut;
     reg [2: 0] aluControlOut;
+    reg BNEOut, IMMOut, branchOut, writeMemoryOut, loadOut;
 
 
     always @ (posedge clk or posedge rst) begin
@@ -121,8 +123,8 @@ module DecodeStage(
             out2out = out2in;
             wb1out = wb1in;
             extout = extin;
-            forSignal = forSig;
-            writeRegOut = writeRegister;
+            forSignalIn = forSignalOut;
+            writeRegOut = writeRegIn;
             aluControlOut = aluControl;
             BNEOut = BNEin;
             IMMOut = IMMin;
@@ -132,6 +134,52 @@ module DecodeStage(
         end
     end
 endmodule
+
+// Stage 3: Execute
+module ExecuteStage(
+    input clk,
+    input rst,
+    input [15: 0] aluIn, 
+    input [15: 0] DataIn, 
+    input [2: 0] WB2in, 
+    input writeMemoryIn,
+    input forSignalIn,
+    input loadIn, 
+    input writeRegIn,   
+    output [15: 0] aluOut,
+    output [15: 0] DataOut,
+    output [2: 0] WB2out,
+    output writeMemoryOut,
+    output forSignalOut,
+    output loadOut,
+    output writeRegOut
+    );
+
+    reg [15: 0] aluOut, DataOut;
+    reg [2: 0] WB2out;
+    reg writeMemoryOut, forSignalOut, loadOut, writeRegOut;
+    
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            aluOut = 16'h0000;
+            DataOut = 16'h0000;
+            WB2out = 16'h0000;
+            writeMemoryOut = 0;
+            forSignalOut = 0;
+            loadOut = 0;
+            writeRegOut = 0;
+        end else begin
+            aluOut = aluIn;
+            DataOut = DataIn;
+            WB2out = WB2in;
+            writeMemoryOut = writeMemoryIn;
+            forSignalOut = forSignalIn;
+            loadOut = loadIn;
+            writeRegOut = writeRegIn;
+        end
+    end
+endmodule
+
 
 module Top(input clk, 
     input reset, 
