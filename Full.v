@@ -63,7 +63,75 @@ module Top_tb;
 
 endmodule
 
+// Pipelined Stages
 
+// Stage 1: Instruction Fetch
+
+// Stage 2: Instruction Decode
+module DecodeStage(
+    input rst,
+    input clk,
+    input [15: 0] out1in, 
+    input [15: 0] out2in,
+    input [15: 0] wb1in,
+    input [15: 0] extin,
+    input forSig,
+    input writeRegister,
+    input [2: 0] aluControl,
+    input BNEin,
+    input IMMin,
+    input branchIn,
+    input writeMemoryIn,
+    input loadIn,
+    output [15: 0] out1out,
+    output [15: 0] out2out,
+    output [15: 0] wb1out,
+    output [15: 0] extout,
+    output forSignal,
+    output writeRegOut,
+    output [2: 0] aluControlOut,
+    output BNEOut,
+    output IMMOut,
+    output branchOut,
+    output writeMemoryOut,
+    output loadOut
+);
+
+    reg [15: 0] out1out, out2out, wb1out, extout;
+    reg forSignal, writeRegOut, BNEOut, IMMOut, branchOut, writeMemoryOut, loadOut;
+    reg [2: 0] aluControlOut;
+
+
+    always @ (posedge clk or posedge rst) begin
+        if (rst) begin
+            out1out = 16'h0000;
+            out2out = 16'h0000;
+            wb1out = 16'h0000;
+            extout = 16'h0000;
+            forSignal = 0;
+            writeRegOut = 0;
+            aluControlOut = 3'b000;
+            BNEOut = 0;
+            IMMOut = 0;
+            branchOut = 0;
+            writeMemoryOut = 0;
+            loadOut = 0;
+        end else begin
+            out1out = out1in;
+            out2out = out2in;
+            wb1out = wb1in;
+            extout = extin;
+            forSignal = forSig;
+            writeRegOut = writeRegister;
+            aluControlOut = aluControl;
+            BNEOut = BNEin;
+            IMMOut = IMMin;
+            branchOut = branchIn;
+            writeMemoryOut = writeMemoryIn;
+            loadOut = loadIn;
+        end
+    end
+endmodule
 
 module Top(input clk, 
     input reset, 
