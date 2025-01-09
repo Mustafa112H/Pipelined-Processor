@@ -2,13 +2,15 @@ module PCFetch (
     input clk,
     input rst,
     input [15:0] pc_next,
+    input StallF,
     output reg [15:0] pc_out
 );
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             pc_out <= 16'h0000;
-        end else begin
+        end 
+        if (StallF == 0) begin
             pc_out <= pc_next;
         end
     end
@@ -19,7 +21,7 @@ module DecodeStage(input [15:0] InstructionIn,
 input StallD,
 input CLK,
 input Reset,
-output [15:0] InstructionOut);
+output reg [15:0] InstructionOut);
 always @ (posedge CLK or posedge Reset )begin
     if (Reset) begin
         InstructionOut <= 16'b0; 
@@ -46,9 +48,10 @@ module ExecuteStage(
     input branchIn,
     input writeMemoryIn,
     input loadIn,
+    input FlushE,
     output [15: 0] out1out,
     output [15: 0] out2out,
-    output [2: 0] wb1out,
+    output reg [2: 0] wb1out,
     output [15: 0] extout,
     output forSignalOut,
     output writeRegOut,
@@ -61,19 +64,19 @@ module ExecuteStage(
 );
 
 
-    reg [15: 0] out1out, out2out, wb1out, extout;
+    reg [15: 0] out1out, out2out, extout;
     reg forSignalOut, writeRegOut;
     reg [2: 0] aluControlOut;
     reg BNEOut, IMMOut, branchOut, writeMemoryOut, loadOut;
 
 
     always @ (posedge clk or posedge rst) begin
-        if (rst) begin
+        if (rst || FlushE) begin
             out1out = 16'h0000;
             out2out = 16'h0000;
             wb1out = 16'h0000;
             extout = 16'h0000;
-            forSignal = 0;
+            forSignalOut = 0;
             writeRegOut = 0;
             aluControlOut = 3'b000;
             BNEOut = 0;
@@ -86,7 +89,7 @@ module ExecuteStage(
             out2out = out2in;
             wb1out = wb1in;
             extout = extin;
-            forSignalIn = forSignalOut;
+            forSignalOut = forSignalIn;
             writeRegOut = writeRegIn;
             aluControlOut = aluControl;
             BNEOut = BNEin;
@@ -138,6 +141,36 @@ module MemoryStage(
             writeMemoryOut = writeMemoryIn;
             forSignalOut = forSignalIn;
             loadOut = loadIn;
+            writeRegOut = writeRegIn;
+        end
+    end
+endmodule
+
+// Stage 4: WriteBack
+module WriteBackStage(
+    input clk,
+    input rst,
+    input [15: 0] DataIn,
+    input [2: 0] WB3in,
+    input writeRegIn,
+    output [15: 0] DataOut,
+    output [2: 0] WB3out,
+    output writeRegOut
+
+);
+
+    reg [15: 0] DataOut;
+    reg [2: 0] WB3out;
+    reg writeRegOut;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            DataOut = 16'h0000;
+            WB3out = 16'h0000;
+            writeRegOut = 0;
+        end else begin
+            DataOut = DataIn;
+            WB3out = WB3in;
             writeRegOut = writeRegIn;
         end
     end

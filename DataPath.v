@@ -13,12 +13,25 @@ module DataPath(
     input bne,
     input branch_signal,
     input write_to_mem,
+    output WriteToMemoryM,
     input [2:0] alu_control,
     input [15:0] RD, // data from memory
     input [15: 0] inst_in,
+    output [15:0] instructionToDecode,
     output [15:0] pc_out,
-    output [15:0] alu_out,
-    output [15:0] write_on_memory_data
+    output [15:0] AluM,
+    output [15:0] DataOut,
+    output [2:0] A1,
+    output [2:0] A2,
+    output [2:0] WB2,
+    output writeToRegM,
+    output [2:0] WB3,
+    output writeToRegW,
+    input [1:0] ForwardA,
+    input [1:0] ForwardB,
+    input StallF,
+    input StallD,
+    input FlushE
 );
 
     // PC Handling
@@ -28,10 +41,46 @@ module DataPath(
         .clk(clk),
         .rst(rst),
         .pc_next(pc_next),
-        .pc_out(pc_out)
+        .pc_out(pc_out),
+        .StallF(StallF)
     );
-    
-    
+    wire [15:0] instructionToDecode;
+    DecodeStage dec(inst_in,StallD, clk, rst,instructionToDecode);
+    //Forwarding choose
+
+        wire [15:0] WBData;
+        wire [15: 0] out1_E;
+        wire [15: 0] out2_E;
+        wire [15:0] out1, out2; 
+    Mux4x2 FWA(
+        .in1(reg_out1),
+        .in2(DataOut),
+        .in3(WBData),
+        .in4(16'h0000),
+        .sel(ForwardA),
+        .out(out1)
+    );
+    Mux4x2 FWB(
+        .in1(reg_out2),
+        .in2(DataOut),
+        .in3(WBData),
+        .in4(16'h0000),
+        .sel(ForwardB),
+        .out(out2)
+    );
+    wire [2: 0] WB1;
+    wire [15:0] EXT_Out;
+    wire ForSignalE,writeToRegE,bneE,immE,BranchE,WriteMemoryE,loadE;
+    wire [2:0] aluControlE;
+    ExecuteStage execute(rst, clk,out1,out2, mux_a3_out, branch_extended,for_signal,write_to_reg,alu_control,bne,imm,branch_signal,write_to_mem,load,FlushE,out1_E, out2_E,WB1,EXT_Out,ForSignalE,writeToRegE,aluControlE,bneE,immE,BranchE,WriteMemoryE,loadE );
+    wire [15:0] AluM;
+    wire WriteToMemoryM,ForSignalM,LoadM;
+    wire [15:0] DataOut;
+    wire [2: 0] WB2;
+    wire [2:0] WB3;
+
+    MemoryStage stage(clk,rst,alu_out,out2_E,WB1, WriteMemoryE, ForSignalE,loadE,writeToRegE, AluM,DataOut,WB2,WriteToMemoryM,ForSignalM,LoadM,writeToRegM);
+    WriteBackStage wb(clk, rst, mux_wd3_2_out, WB2, writeToRegM,WBData,WB3, writeToRegW );
     // JMP Target
     wire [15: 0] jmp_target_extended;
     // Branch
@@ -49,13 +98,13 @@ module DataPath(
     // Concat module for jmp_target
     Concat concat_jmp_target(
         .in1(pc_plus_1[15: 9]),
-        .in2(inst_in[11: 3]),
+        .in2(instructionToDecode[11: 3]),
         .out(jmp_target_extended)
     );
 
     // Extender module for branch (sign extend)
     Extender extender_branch(
-        .in(inst_in[5: 0]),
+        .in(instructionToDecode[5: 0]),
         .out(branch_extended),
         .logical_signal(logical_signal)
     );
@@ -83,7 +132,7 @@ module DataPath(
     Mux2x1 mux_zero(
         .I0(zero_signal),
         .I1(not_zero),
-        .Sel(bne),
+        .Sel(bneE),
         .out(mux_zero_out)
     );
 
@@ -91,24 +140,24 @@ module DataPath(
     wire and_out_2;
     AND_Gate and_2(
         .In1(mux_zero_out),
-        .In2(branch_signal),
+        .In2(BranchE),
         .out(and_out_2)
     );
     // Register file
 
     // Mux2x1 for choosing (A1)
-    wire [15: 0] mux_a1_out;
+    wire [2:0] A1;
     Mux2x1 mux_a1(
-        .I0(inst_in[11: 9]),
-        .I1(inst_in[5: 3]),
+        .I0(instructionToDecode[11: 9]),
+        .I1(instructionToDecode[5: 3]),
         .Sel(r_type),
-        .out(mux_a1_out)
+        .out(A1)
     );
     // Mux2x1 for choosing (A3)
-    wire [15: 0] mux_a3_out;
+    wire [2: 0] mux_a3_out;
     Mux2x1 mux_a3(
-        .I0(inst_in[8: 6]),
-        .I1(inst_in[11: 9]),
+        .I0(instructionToDecode[8: 6]),
+        .I1(instructionToDecode[11: 9]),
         .Sel(r_type),
         .out(mux_a3_out)
     );
@@ -116,7 +165,7 @@ module DataPath(
     // reg_out_2 + -1
     wire [15: 0] reg_out_2_minus_1;
     Adder adder_reg_out_2_minus_1(
-        .In1(reg_out2),
+        .In1(DataOut),
         .In2(16'hFFFF),
         .out(reg_out_2_minus_1)
     );
@@ -126,25 +175,25 @@ module DataPath(
     // Mux2x1 for choosing (R1)
     wire [15: 0] mux_r1_out;
     Mux2x1 mux_r1(
-        .I0(reg_out1),
+        .I0(out1_E),
         .I1(16'h0000),
-        .Sel(for_signal),
+        .Sel(ForSignalE),
         .out(mux_r1_out)
     );
     // Mux2x1 for choosing (R2)
     wire [15: 0] mux_r2_out;
     Mux2x1 mux_r2(
-        .I0(reg_out2),
-        .I1(branch_extended),
-        .Sel(imm),
+        .I0(out2_E),
+        .I1(EXT_Out),
+        .Sel(immE),
         .out(mux_r2_out)
     );
-
+wire [15:0] alu_out;
     wire zero_signal_alu;
     ALU alu(
         .R1(mux_r1_out),
         .R2(mux_r2_out),
-        .alucontrol(alu_control),
+        .alucontrol(aluControlE),
         .Answer(alu_out),
         .zeroflag(zero_signal_alu)
     );
@@ -156,9 +205,9 @@ module DataPath(
     // Mux2x1 for choosing (WD3)
     wire [15: 0] mux_wd3_1_out;
     Mux2x1 mux_wd3_1(
-        .I0(alu_out),
+        .I0(AluM),
         .I1(reg_out_2_minus_1),
-        .Sel(for_signal),
+        .Sel(ForSignalE),
         .out(mux_wd3_1_out)
     );
     // Mux2x1 for choosing (WD3)
@@ -166,19 +215,21 @@ module DataPath(
     Mux2x1 mux_wd3(
         .I0(mux_wd3_1_out),
         .I1(RD),
-        .Sel(load),
+        .Sel(LoadM),
         .out(mux_wd3_2_out)
     );
     wire [15: 0] reg_out1;
     wire [15: 0] reg_out2;  
+    wire [2:0] A2; 
+    assign A2 = instructionToDecode[8:6];
     RegisterFile reg_file (
         .clk(clk),
         .rst(rst),
-        .WE3(write_to_reg),
-        .WD3(mux_wd3_2_out),
-        .A1(mux_a1_out[2: 0]),
-        .A2(inst_in[8: 6]),
-        .A3(mux_a3_out[2: 0]),
+        .WE3(writeToRegW),
+        .WD3(WBData),
+        .A1(A1),
+        .A2(A2),
+        .A3(WB3),
         .RD1(reg_out1),
         .RD2(reg_out2)
 );
@@ -198,7 +249,7 @@ module DataPath(
     wire [15: 0] branch_extended_add_pc_plus_1;
     Adder adder_branch_pc_plus_1(
         .In1(pc_out),
-        .In2(branch_extended),
+        .In2(EXT_Out),
         .out(branch_extended_add_pc_plus_1)
     );
     // RR

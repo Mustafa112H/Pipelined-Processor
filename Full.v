@@ -26,23 +26,10 @@ module Top_tb;
     );
 
     // Clock generation: toggle every 5ns for a 10ns period
-    always #5 clk = ~clk;
+    always #1 clk = ~clk;
     always begin
         #5;
-        if (uut.instr == 16'b1111111111111111) begin
-            $display("Successfully Exited");
-            uut.imem.print_memory();
-            uut.dmem.printMemory();
-            $finish;
-        end
-        if(uut.instr == 0) begin
-            $display("PC = %0b", uut.PC);
-            $display("Invalid Instruction ..... Terminating!");
-            uut.imem.print_memory();
-            uut.dmem.printMemory();
-            $finish;// Terminate the simulation
-        end
-    end 
+    end
 
     initial begin
         // Initialize signals
@@ -87,15 +74,27 @@ module MainProcessor(
     input rst, 
     output [15:0] PC, 
     input [15:0] instr, 
-    output WriteToMEM, 
+    output WriteToMemM, 
     input [15:0] readData,
     output [15:0]AluOut, 
     output [15: 0] WriteData);
 
-    wire ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch;
+    wire ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM;
     wire [2:0] AluControl;
-    controller c(instr[15:12],instr[2:0],ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM,AluControl);
-    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM, AluControl, readData, instr, PC, AluOut, WriteData);
+    wire [2:0] A;          
+    wire [2:0] B;          
+    wire [2:0] WB2;   
+    wire RegWriteM;
+    wire [2:0] WB3;   
+    wire RegWriteW;
+    wire [1:0] ForwardA;   
+    wire [1:0] ForwardB;  
+    wire StallF;       // Stall signal for Fetch stage
+    wire StallD, FlushE; 
+    wire [15:0]instructionToDecode;
+    HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,StallF,StallD,FlushE);
+    controller c(instructionToDecode[15:12],instructionToDecode[2:0],ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM,AluControl);
+    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,WriteToMemM, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,StallF,StallD,FlushE);
 
 endmodule
 

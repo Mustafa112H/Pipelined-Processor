@@ -1,6 +1,6 @@
 
 
-module hazard_detection(
+module HazardUnit(
     input [2:0] A,          
     input [2:0] B,          
     input [2:0] WB2,   
