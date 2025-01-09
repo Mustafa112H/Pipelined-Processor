@@ -42,8 +42,9 @@ module Top_tb;
 
         // Apply reset
         reset = 1; // Assert reset
-        #10;
+        #1;
         reset = 0; // Deassert reset
+    
 
         // Run simulation for a specified duration
         #5000; // Let the simulation run for 500ns
