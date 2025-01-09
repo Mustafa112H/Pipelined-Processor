@@ -4,6 +4,10 @@
 `include "Components.v"
 `include "DataPath.v"
 `include "PipelineRegisters.v"
+`include "PerformanceRegisters.v"
+`include "Memories.v"
+`include "HazardUnit.v"
+
 module Top_tb;
 
     reg clk; // Clock signal
@@ -65,72 +69,6 @@ module Top_tb;
     end
 endmodule
 
-module DecodeStage(
-    input rst,
-    input clk,
-    input [15: 0] out1in, 
-    input [15: 0] out2in,
-    input [2: 0] wb1in,
-    input [15: 0] extin,
-    input forSignalIn,
-    input writeRegIn,
-    input [2: 0] aluControl,
-    input BNEin,
-    input IMMin,
-    input branchIn,
-    input writeMemoryIn,
-    input loadIn,
-    output [15: 0] out1out,
-    output [15: 0] out2out,
-    output [2: 0] wb1out,
-    output [15: 0] extout,
-    output forSignalOut,
-    output writeRegOut,
-    output [2: 0] aluControlOut,
-    output BNEOut,
-    output IMMOut,
-    output branchOut,
-    output writeMemoryOut,
-    output loadOut
-);
-
-
-    reg [15: 0] out1out, out2out, wb1out, extout;
-    reg forSignalOut, writeRegOut;
-    reg [2: 0] aluControlOut;
-    reg BNEOut, IMMOut, branchOut, writeMemoryOut, loadOut;
-
-
-    always @ (posedge clk or posedge rst) begin
-        if (rst) begin
-            out1out = 16'h0000;
-            out2out = 16'h0000;
-            wb1out = 16'h0000;
-            extout = 16'h0000;
-            forSignal = 0;
-            writeRegOut = 0;
-            aluControlOut = 3'b000;
-            BNEOut = 0;
-            IMMOut = 0;
-            branchOut = 0;
-            writeMemoryOut = 0;
-            loadOut = 0;
-        end else begin
-            out1out = out1in;
-            out2out = out2in;
-            wb1out = wb1in;
-            extout = extin;
-            forSignalIn = forSignalOut;
-            writeRegOut = writeRegIn;
-            aluControlOut = aluControl;
-            BNEOut = BNEin;
-            IMMOut = IMMin;
-            branchOut = branchIn;
-            writeMemoryOut = writeMemoryIn;
-            loadOut = loadIn;
-        end
-    end
-endmodule
 
 
 module Top(input clk, 
@@ -160,83 +98,6 @@ module MainProcessor(
     DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM, AluControl, readData, instr, PC, AluOut, WriteData);
 
 endmodule
-
-module InstructionMemory(input [15:0] A, output reg [15:0] RD);
-
-    reg [15:0] memory [0:63];  //memory has 64 locations and each cell is 16 bits
-
-    initial begin
-    $readmemb("Instruction.txt", memory); //this will read the file to initialize the memory
-    end
-
-
-
-    always @* begin
-        RD = memory[A];
-    end
-    task print_memory;
-    integer i;
-    begin
-        // Loop through all memory locations and print the content
-        $display("\n----------Instruction Memory-----------------");
-        for (i = 0; i < 64; i = i + 1) begin
-              // Set the address to i
-            #1;  // Wait for the memory to resolve
-            $display("MemoryInstr[%0d] = %b", i,memory[i] );  // Print memory content
-        end
-        $display("----------------------------------------------");
-    end
-    endtask
-endmodule
-
-
-module DataMemory(input [15:0] A, input [15:0] WD, input WE, CLK, output reg [15:0] RD);
-
-     reg [15:0] memory [0:63];  //memory has 64 locations and each cell is 16 bits
-
-        initial begin  
-        $readmemb("Data.txt", memory); //this will read the file to initialize the memory
-        end
-        always @(negedge CLK) begin
-        RD = memory[A];  // Read memory at address A
-        end
-
-     always @ (posedge CLK) begin
-         if (WE == 1)
-             begin
-                    memory[A] = WD;
-             end
-        end 
-  // Task to print memory contents
-    task printMemory;
-        integer i;
-        begin
-            $display("\n----- Memory Contents -----");
-            for (i = 0; i < 64; i = i + 1) begin
-                $display("Memory[%0d] = %0d", i, $signed(memory[i]));
-            end
-            $display("---------------------------");
-        end
-    endtask
-
-endmodule
-
-module RR(
-    input clk,
-    input rst,
-    input [15:0] in,
-    output reg [15:0] out
-);
-
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            out <= 16'h0000;
-        end else begin
-            out <= in;
-        end
-    end
-endmodule
-
 
 
 

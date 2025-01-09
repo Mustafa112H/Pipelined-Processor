@@ -14,7 +14,7 @@ module PCFetch (
     end
 
 endmodule
-
+//2: Decode Stage
 module DecodeStage(input [15:0] InstructionIn,
 input StallD,
 input CLK,
@@ -30,8 +30,8 @@ always @ (posedge CLK or posedge Reset )begin
 end
 endmodule
 
-// Stage 2: Instruction Decode
-module DecodeStage(
+// Stage 3: ExecuteStage
+module ExecuteStage(
     input rst,
     input clk,
     input [15: 0] out1in, 
@@ -98,8 +98,8 @@ module DecodeStage(
     end
 endmodule
 
-// Stage 3: Execute
-module ExecuteStage(
+// Stage 4: MemoryStage
+module MemoryStage(
     input clk,
     input rst,
     input [15: 0] aluIn, 

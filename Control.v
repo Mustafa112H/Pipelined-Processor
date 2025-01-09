@@ -34,33 +34,40 @@ endmodule
 `define RET  3'b010
 `define JTYPE   4'b0001
 
-module mainDec(input [3:0] opcode, input [2:0]func, output ForSignal, output UpdateRR, output JMP, output SelectPCSrc,
-	output Load, 
-	output RType,
-	output Logical, 
-	output WriteToReg, 
-	output IMM,
-	output BNE, 
-	output Branch, 
-	output WriteToMEM,
-	output [1:0] AluOp);	   
+module mainDec(
+    input [3:0] opcode, 
+    input [2:0] func, 
+    output ForSignal, 
+    output UpdateRR, 
+    output JMP, 
+    output SelectPCSrc,
+    output Load, 
+    output RType,
+    output Logical, 
+    output WriteToReg, 
+    output IMM,
+    output BNE, 
+    output Branch, 
+    output WriteToMEM,
+    output [1:0] AluOp
+);	   
 
     assign ForSignal = (opcode == `FOR);
-    assign UpdateRR = ((opcode == `FOR) ^ (opcode == `JTYPE && func == `CALL));
-    assign JMP = (opcode == `JTYPE && (func == `CALL ^  func == `JMP));
+    assign UpdateRR = ((opcode == `FOR) || (opcode == `JTYPE && func == `CALL));
+    assign JMP = (opcode == `JTYPE && (func == `CALL || func == `JMP));
     assign SelectPCSrc = (opcode == `JTYPE);
-    assign Load = (opcode ==`LOAD);
+    assign Load = (opcode == `LOAD);
     assign RType = (opcode == `RTYPE); 
     assign Logical = (opcode == `ANDI);
     assign WriteToReg = (opcode != `JTYPE && opcode != `BEQ && opcode != `BNE && opcode != `STORE);
-    assign IMM = (opcode == `ADDI ^ opcode ==`ANDI ^ opcode == `LOAD ^ opcode == `STORE);
+    assign IMM = (opcode == `ADDI || opcode == `ANDI || opcode == `LOAD || opcode == `STORE);
     assign BNE = (opcode == `BNE);
-    assign Branch = (opcode == `BEQ ^ opcode == `BNE);
+    assign Branch = (opcode == `BEQ || opcode == `BNE);
     assign WriteToMEM = (opcode == `STORE);
     assign AluOp = (opcode == `RTYPE) ? 2'b00 :                  // RTYPE
                    (opcode == `ANDI)  ? 2'b10 :                  // ANDI
-                   (opcode == `ADDI ^ opcode == `LOAD ^ opcode == `STORE)  ? 2'b01 :                  // ADDI
-                   2'b11;       
+                   (opcode == `ADDI || opcode == `LOAD || opcode == `STORE) ? 2'b01 : // ADDI, LOAD, STORE
+                   2'b11;        // Default case       
 
 endmodule
 

@@ -24,7 +24,7 @@ module DataPath(
     // PC Handling
     wire [15: 0] pc_next;
 
-    PC pc(
+    PCFetch pc(
         .clk(clk),
         .rst(rst),
         .pc_next(pc_next),
