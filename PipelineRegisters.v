@@ -85,18 +85,18 @@ module ExecuteStage(
             writeMemoryOut = 0;
             loadOut = 0;
         end else begin
-            out1out = out1in;
-            out2out = out2in;
-            wb1out = wb1in;
-            extout = extin;
-            forSignalOut = forSignalIn;
-            writeRegOut = writeRegIn;
-            aluControlOut = aluControl;
-            BNEOut = BNEin;
-            IMMOut = IMMin;
-            branchOut = branchIn;
-            writeMemoryOut = writeMemoryIn;
-            loadOut = loadIn;
+            out1out <= out1in;
+            out2out <= out2in;
+            wb1out <= wb1in;
+            extout <= extin;
+            forSignalOut <= forSignalIn;
+            writeRegOut <= writeRegIn;
+            aluControlOut <= aluControl;
+            BNEOut <= BNEin;
+            IMMOut <= IMMin;
+            branchOut <= branchIn;
+            writeMemoryOut <= writeMemoryIn;
+            loadOut <= loadIn;
         end
     end
 endmodule
@@ -105,43 +105,42 @@ endmodule
 module MemoryStage(
     input clk,
     input rst,
-    input [15: 0] aluIn, 
-    input [15: 0] DataIn, 
-    input [2: 0] WB2in, 
+    input [15:0] aluIn, 
+    input [15:0] DataIn, 
+    input [2:0] WB2in, 
     input writeMemoryIn,
     input forSignalIn,
     input loadIn, 
     input writeRegIn,   
-    output [15: 0] aluOut,
-    output [15: 0] DataOut,
-    output [2: 0] WB2out,
-    output writeMemoryOut,
-    output forSignalOut,
-    output loadOut,
-    output writeRegOut
-    );
+    output reg [15:0] aluOut,
+    output reg [15:0] DataOut,
+    output reg [2:0] WB2out,
+    output reg writeMemoryOut,
+    output reg forSignalOut,
+    output reg loadOut,
+    output reg writeRegOut
+);
 
-    reg [15: 0] aluOut, DataOut;
-    reg [2: 0] WB2out;
-    reg writeMemoryOut, forSignalOut, loadOut, writeRegOut;
-    
+    // Sequential block to update outputs on clock or reset
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            aluOut = 16'h0000;
-            DataOut = 16'h0000;
-            WB2out = 16'h0000;
-            writeMemoryOut = 0;
-            forSignalOut = 0;
-            loadOut = 0;
-            writeRegOut = 0;
+            // Reset all outputs
+            aluOut <= 16'h0000;
+            DataOut <= 16'h0000;
+            WB2out <= 3'b000;
+            writeMemoryOut <= 0;
+            forSignalOut <= 0;
+            loadOut <= 0;
+            writeRegOut <= 0;
         end else begin
-            aluOut = aluIn;
-            DataOut = DataIn;
-            WB2out = WB2in;
-            writeMemoryOut = writeMemoryIn;
-            forSignalOut = forSignalIn;
-            loadOut = loadIn;
-            writeRegOut = writeRegIn;
+            // Update outputs based on inputs
+            aluOut <= aluIn;
+            DataOut <= DataIn;
+            WB2out <= WB2in;
+            writeMemoryOut <= writeMemoryIn; // Properly updating writeMemoryOut
+            forSignalOut <= forSignalIn;
+            loadOut <= loadIn;
+            writeRegOut <= writeRegIn;
         end
     end
 endmodule
@@ -169,9 +168,9 @@ module WriteBackStage(
             WB3out = 16'h0000;
             writeRegOut = 0;
         end else begin
-            DataOut = DataIn;
-            WB3out = WB3in;
-            writeRegOut = writeRegIn;
+            DataOut <= DataIn;
+            WB3out <= WB3in;
+            writeRegOut <= writeRegIn;
         end
     end
 endmodule

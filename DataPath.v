@@ -77,7 +77,7 @@ module DataPath(
     wire ForSignalM,LoadM;
 
 
-    MemoryStage stage(clk,rst,alu_out,out2_E,WB1, WriteMemoryE, ForSignalE,loadE,writeToRegE, AluM,DataOut,WB2,WriteToMemoryM,ForSignalM,LoadM,writeToRegM);
+    MemoryStage memstage(clk,rst,alu_out,out2_E,WB1, WriteMemoryE, ForSignalE,loadE,writeToRegE, AluM,DataOut,WB2,WriteToMemoryM,ForSignalM,LoadM,writeToRegM);
     WriteBackStage wb(clk, rst, mux_wd3_2_out, WB2, writeToRegM,WBData,WB3, writeToRegW );
     // JMP Target
     wire [15: 0] jmp_target_extended;
