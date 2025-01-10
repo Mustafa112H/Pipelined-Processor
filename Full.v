@@ -26,25 +26,24 @@ module Top_tb;
     );
 
     // Clock generation: toggle every 5ns for a 10ns period
-    always #1 clk = ~clk;
-    always begin
-        #5;
+   initial
+    begin
+      reset <= 1; # 1; reset <= 0;
+    end
+
+  // generate clock to sequence tests
+  always
+    begin
+      clk <= 1; # 1; clk <= 0; # 1;
     end
 
     initial begin
-        // Initialize signals
-        clk = 0;
-        reset = 0;
 
         // Dump waveforms to a VCD file
         $dumpfile("waveform.vcd"); // Specify VCD file name
         $dumpvars(0, Top_tb); // Dump all signals in the module hierarchy
 
-        // Apply reset
-        reset = 1; // Assert reset
-        #1;
-        reset = 0; // Deassert reset
-    
+
 
         // Run simulation for a specified duration
         #5000; // Let the simulation run for 500ns

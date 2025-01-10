@@ -74,10 +74,8 @@ module DataPath(
     wire [2:0] aluControlE;
     ExecuteStage execute(rst, clk,out1,out2, mux_a3_out, branch_extended,for_signal,write_to_reg,alu_control,bne,imm,branch_signal,write_to_mem,load,FlushE,out1_E, out2_E,WB1,EXT_Out,ForSignalE,writeToRegE,aluControlE,bneE,immE,BranchE,WriteMemoryE,loadE );
     wire [15:0] AluM;
-    wire WriteToMemoryM,ForSignalM,LoadM;
-    wire [15:0] DataOut;
-    wire [2: 0] WB2;
-    wire [2:0] WB3;
+    wire ForSignalM,LoadM;
+
 
     MemoryStage stage(clk,rst,alu_out,out2_E,WB1, WriteMemoryE, ForSignalE,loadE,writeToRegE, AluM,DataOut,WB2,WriteToMemoryM,ForSignalM,LoadM,writeToRegM);
     WriteBackStage wb(clk, rst, mux_wd3_2_out, WB2, writeToRegM,WBData,WB3, writeToRegW );
@@ -207,7 +205,7 @@ wire [15:0] alu_out;
     Mux2x1 mux_wd3_1(
         .I0(AluM),
         .I1(reg_out_2_minus_1),
-        .Sel(ForSignalE),
+        .Sel(ForSignalM),
         .out(mux_wd3_1_out)
     );
     // Mux2x1 for choosing (WD3)

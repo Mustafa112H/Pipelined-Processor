@@ -18,19 +18,19 @@ module HazardUnit(
 
 // Forwarding for (First Source Register in Decode stag
 assign ForwardA = 
-    (A == WB2 && RegWriteM) ? 2'b10 :   // Forward data from MEM stage
+    (A !=0 && A == WB2 && RegWriteM) ? 2'b10 :   // Forward data from MEM stage
     (A == WB3 && RegWriteW) ? 2'b01 :   // Forward data from WB stage
     2'b00;  // No forwarding (default)
 
 // Forwarding for (Second Source Register)
 assign ForwardB = 
-    (B == WB2 && RegWriteM) ? 2'b10 :   // Forward data from MEM stage
+    (B!=0 && B == WB2 && RegWriteM) ? 2'b10 :   // Forward data from MEM stage
     (B == WB3 && RegWriteW) ? 2'b01 :   // Forward data from WB stage
     2'b00;  // No forwarding (default)
 
 // Load-use hazard detection
 wire lwstall;
-assign lwstall = ((A == WB2 || B == WB2) && RegWriteM) || ((A == WB3 || B == WB3) && RegWriteW);
+assign lwstall = 0;
 
 wire branchstall;
 assign branchstall = BranchD||ForSignalD;  // Stall on branch until resolved in EX stage
@@ -39,7 +39,7 @@ assign branchstall = BranchD||ForSignalD;  // Stall on branch until resolved in 
 always @(*) begin
     StallF = lwstall || branchstall;   // Stall fetch stage
     StallD = lwstall || branchstall;   // Stall decode stage
-    FlushE = lwstall || branchstall;   // Flush execute stage if hazard detected
+    FlushE = branchstall;   // Flush execute stage if hazard detected
 end
 
 endmodule
