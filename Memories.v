@@ -34,8 +34,8 @@ module DataMemory(input [15:0] A, input [15:0] WD, input WE, CLK, output reg [15
         initial begin  
         $readmemb("Data.txt", memory); //this will read the file to initialize the memory
         end
-        always @(posedge CLK) begin
-        RD = memory[A];  // Read memory at address A
+        always @(*) begin
+        RD <= memory[A];  // Read memory at address A
         end
 
      always @ (negedge CLK) begin

@@ -93,7 +93,7 @@ module MainProcessor(
     wire StallD, FlushE; 
     wire [15:0]instructionToDecode;
     HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,StallF,StallD,FlushE);
-    controller c(instructionToDecode[15:12],instructionToDecode[2:0],ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM,AluControl);
+    controller c(instr[15:12],instr[2:0],ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM,AluControl);
     DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,WriteToMemM, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,StallF,StallD,FlushE);
 
 endmodule
