@@ -75,10 +75,10 @@ module Mux4x2(
 
     always @(*) begin
         case(sel)
-            2'b00: mux_out = in1;
-            2'b01: mux_out = in2;
-            2'b10: mux_out = in3;
-            2'b11: mux_out = in4;
+            2'b00: mux_out <= in1;
+            2'b01: mux_out <= in2;
+            2'b10: mux_out <= in3;
+            2'b11: mux_out <= in4;
         endcase
     end
 
@@ -95,10 +95,10 @@ module Mux2x1 (
 
     always @ (*) begin
         if (Sel == 0) begin 
-            out = I0;
+            out <= I0;
         end
         else begin 
-            out = I1;
+            out <= I1;
         end
     end
 endmodule

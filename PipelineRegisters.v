@@ -17,20 +17,67 @@ module PCFetch (
 
 endmodule
 //2: Decode Stage
-module DecodeStage(input [15:0] InstructionIn,
-input StallD,
-input CLK,
-input Reset,
-output reg [15:0] InstructionOut);
-always @ (posedge CLK or posedge Reset )begin
+module DecodeStage(
+    input [15:0] InstructionIn,
+    input StallD,
+    input CLK,
+    input Reset,
+    output reg [15:0] InstructionOut,
+    input ForSignalIn,
+    input Load,
+    input RType,
+    input Logical,
+    input WriteToReg,
+    input IMM,
+    input BNE, 
+    input Branch,
+    input WriteToMEM,
+    input [2:0] AluControl,
+    output reg ForSignalOut,
+    output reg LoadOut,
+    output reg RTypeOut,
+    output reg LogicalOut,
+    output reg WriteToRegOut,
+    output reg IMMOut,
+    output reg BNEOut, 
+    output reg BranchOut,
+    output reg WriteToMEMOut,
+    output reg [2:0] aluControlOut
+);
+
+always @(posedge CLK or posedge Reset) begin
     if (Reset) begin
+        // Reset all outputs to zero
         InstructionOut <= 16'b0; 
+        ForSignalOut <= 0;
+        LoadOut <= 0;
+        RTypeOut <= 0;
+        LogicalOut <= 0;
+        WriteToRegOut <= 0;
+        IMMOut <= 0;
+        BNEOut <= 0;
+        BranchOut <= 0;
+        WriteToMEMOut <= 0;
+        aluControlOut <= 3'b0;
+    end else if (!StallD) begin
+        // Update outputs with input values when not stalled
+        InstructionOut <= InstructionIn;
+        ForSignalOut <= ForSignalIn;
+        LoadOut <= Load;
+        RTypeOut <= RType;
+        LogicalOut <= Logical;
+        WriteToRegOut <= WriteToReg;
+        IMMOut <= IMM;
+        BNEOut <= BNE;
+        BranchOut <= Branch;
+        WriteToMEMOut <= WriteToMEM;
+        aluControlOut <= AluControl;
     end
-    if (StallD==0) begin
-    InstructionOut <= InstructionIn;
-    end
+    // If StallD is high, outputs retain their previous values (no updates)
 end
+
 endmodule
+
 
 // Stage 3: ExecuteStage
 module ExecuteStage(

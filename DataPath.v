@@ -45,7 +45,9 @@ module DataPath(
         .StallF(StallF)
     );
     wire [15:0] instructionToDecode;
-    DecodeStage dec(inst_in,StallD, clk, rst,instructionToDecode);
+   wire ForSignalD, LoadD, RtypeD, LogicalD, WriteToRegD, IMMD, BneD, BranchD, WriteToMEMD;
+    wire [2:0] AluControlD;
+    DecodeStage dec(inst_in,StallD, clk, rst,instructionToDecode,for_signal, load, r_type,logical_signal, write_to_reg, imm, bne, branch, write_to_mem, alu_control, ForSignalD, LoadD, RtypeD, LogicalD, WriteToRegD, IMMD, BneD, BranchD, WriteToMEMD,AluControlD);
     //Forwarding choose
 
         wire [15:0] WBData;
@@ -72,7 +74,7 @@ module DataPath(
     wire [15:0] EXT_Out;
     wire ForSignalE,writeToRegE,bneE,immE,BranchE,WriteMemoryE,loadE;
     wire [2:0] aluControlE;
-    ExecuteStage execute(rst, clk,out1,out2, mux_a3_out, branch_extended,for_signal,write_to_reg,alu_control,bne,imm,branch_signal,write_to_mem,load,FlushE,out1_E, out2_E,WB1,EXT_Out,ForSignalE,writeToRegE,aluControlE,bneE,immE,BranchE,WriteMemoryE,loadE );
+    ExecuteStage execute(rst, clk,reg_out1,reg_out2, mux_a3_out, branch_extended,ForSignalD,WriteToRegD,AluControlD,BneD,IMMD,BranchD,WriteToMEMD,LoadD,FlushE,out1_E, out2_E,WB1,EXT_Out,ForSignalE,writeToRegE,aluControlE,bneE,immE,BranchE,WriteMemoryE,loadE );
     wire [15:0] AluM;
     wire ForSignalM,LoadM;
 
