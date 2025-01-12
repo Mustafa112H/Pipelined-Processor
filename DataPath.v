@@ -98,7 +98,7 @@ module DataPath(
     // Concat module for jmp_target
     Concat concat_jmp_target(
         .in1(pc_out[15:9]),
-        .in2(instr[11:3]),
+        .in2(inst_in[11:3]),
         .out(jmp_target_extended)
     );
 
