@@ -31,8 +31,8 @@ output reg [15:0] RD2 // Read Data Register
 
     // Read Operation
     always @* begin
-        RD1 = RegisterFile[A1];
-        RD2 = RegisterFile[A2];
+        RD1 <= RegisterFile[A1];
+        RD2 <= RegisterFile[A2];
     end
 
 endmodule

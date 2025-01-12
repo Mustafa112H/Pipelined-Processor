@@ -97,8 +97,8 @@ module DataPath(
 
     // Concat module for jmp_target
     Concat concat_jmp_target(
-        .in1(pc_plus_1[15: 9]),
-        .in2(instructionToDecode[11: 3]),
+        .in1(pc_out[15:9]),
+        .in2(instr[11:3]),
         .out(jmp_target_extended)
     );
 
@@ -106,7 +106,7 @@ module DataPath(
     Extender extender_branch(
         .in(instructionToDecode[5: 0]),
         .out(branch_extended),
-        .logical_signal(logical_signal)
+        .logical_signal(LogicalD)
     );
 
 
@@ -150,7 +150,7 @@ module DataPath(
     Mux2x1 mux_a1(
         .I0(instructionToDecode[11: 9]),
         .I1(instructionToDecode[5: 3]),
-        .Sel(r_type),
+        .Sel(RtypeD),
         .out(A1)
     );
     // Mux2x1 for choosing (A3)
@@ -158,7 +158,7 @@ module DataPath(
     Mux2x1 mux_a3(
         .I0(instructionToDecode[8: 6]),
         .I1(instructionToDecode[11: 9]),
-        .Sel(r_type),
+        .Sel(RtypeD),
         .out(mux_a3_out)
     );
     
