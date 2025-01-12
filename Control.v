@@ -79,17 +79,17 @@ module AluDecoder(
 );
     always @* begin 
         case (aluop)
-            2'b10: alucontrol = 3'b000; //and
-            2'b01: alucontrol = 3'b001; //add
-            2'b11: alucontrol = 3'b010;  //sub
+            2'b10: alucontrol <= 3'b000; //and
+            2'b01: alucontrol <= 3'b001; //add
+            2'b11: alucontrol <= 3'b010;  //sub
             default: begin
                 case (func)
-                    3'b000: alucontrol = 3'b000;  //and
-                    3'b001: alucontrol = 3'b001;  //add
-                    3'b010: alucontrol = 3'b010;  //sub
-                    3'b011: alucontrol = 3'b011;  //ShiftLeftLogical
-                    3'b100: alucontrol = 3'b100;  //ShiftRight
-                    default: alucontrol = 3'bxxx;
+                    3'b000: alucontrol <= 3'b000;  //and
+                    3'b001: alucontrol <= 3'b001;  //add
+                    3'b010: alucontrol <= 3'b010;  //sub
+                    3'b011: alucontrol <= 3'b011;  //ShiftLeftLogical
+                    3'b100: alucontrol <= 3'b100;  //ShiftRight
+                    default: alucontrol <= 3'bxxx;
                 endcase
             end
         endcase

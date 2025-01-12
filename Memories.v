@@ -3,7 +3,7 @@ module InstructionMemory(input [15:0] A, output reg [15:0] RD);
     reg [15:0] memory [0:63];  //memory has 64 locations and each cell is 16 bits
 
     initial begin
-    $readmemb("Instruction.txt", memory); //this will read the file to initialize the memory
+    $readmemb("instruction.txt", memory); //this will read the file to initialize the memory
     end
 
 
@@ -35,7 +35,8 @@ module DataMemory(input [15:0] A, input [15:0] WD, input WE, CLK, output reg [15
         $readmemb("Data.txt", memory); //this will read the file to initialize the memory
         end
         always @(*) begin
-        RD <= memory[A];  // Read memory at address A
+                RD <= memory[A];
+            
         end
 
      always @ (negedge CLK) begin

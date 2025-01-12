@@ -29,9 +29,8 @@ module DataPath(
     output writeToRegW,
     input [1:0] ForwardA,
     input [1:0] ForwardB,
-    input StallF,
-    input StallD,
-    input FlushE
+    input Stall,
+    output loadE
 );
 
     // PC Handling
@@ -42,12 +41,12 @@ module DataPath(
         .rst(rst),
         .pc_next(pc_next),
         .pc_out(pc_out),
-        .StallF(StallF)
+        .StallF(Stall)
     );
     wire [15:0] instructionToDecode;
-   wire ForSignalD, LoadD, RtypeD, LogicalD, WriteToRegD, IMMD, BneD, BranchD, WriteToMEMD;
+    wire ForSignalD, LoadD, RtypeD, LogicalD, WriteToRegD, IMMD, BneD, BranchD, WriteToMEMD;
     wire [2:0] AluControlD;
-    DecodeStage dec(inst_in,StallD, clk, rst,instructionToDecode,for_signal, load, r_type,logical_signal, write_to_reg, imm, bne, branch, write_to_mem, alu_control, ForSignalD, LoadD, RtypeD, LogicalD, WriteToRegD, IMMD, BneD, BranchD, WriteToMEMD,AluControlD);
+    DecodeStage dec(inst_in,Stall, clk, rst,instructionToDecode,for_signal, load, r_type,logical_signal, write_to_reg, imm, bne, branch, write_to_mem, alu_control, ForSignalD, LoadD, RtypeD, LogicalD, WriteToRegD, IMMD, BneD, BranchD, WriteToMEMD,AluControlD);
     //Forwarding choose
 
         wire [15:0] WBData;
@@ -74,7 +73,7 @@ module DataPath(
     wire [15:0] EXT_Out;
     wire ForSignalE,writeToRegE,bneE,immE,BranchE,WriteMemoryE,loadE;
     wire [2:0] aluControlE;
-    ExecuteStage execute(rst, clk,reg_out1,reg_out2, mux_a3_out, branch_extended,ForSignalD,WriteToRegD,AluControlD,BneD,IMMD,BranchD,WriteToMEMD,LoadD,FlushE,out1_E, out2_E,WB1,EXT_Out,ForSignalE,writeToRegE,aluControlE,bneE,immE,BranchE,WriteMemoryE,loadE );
+    ExecuteStage execute(rst, clk, out1, out2, mux_a3_out, branch_extended,ForSignalD,WriteToRegD,AluControlD,BneD,IMMD,BranchD,WriteToMEMD,LoadD,Stall,out1_E, out2_E,WB1,EXT_Out,ForSignalE,writeToRegE,aluControlE,bneE,immE,BranchE,WriteMemoryE,loadE );
     wire [15:0] AluM;
     wire ForSignalM,LoadM;
 
@@ -97,7 +96,7 @@ module DataPath(
 
     // Concat module for jmp_target
     Concat concat_jmp_target(
-        .in1(pc_out[15:9]),
+        .in1(pc_plus_1[15:9]),
         .in2(inst_in[11:3]),
         .out(jmp_target_extended)
     );
@@ -129,7 +128,7 @@ module DataPath(
     // MUX for choosing Zero or not zero
     wire mux_zero_out;
 
-    Mux2x1 mux_zero(
+    Mux2x1 #(1) mux_zero(
         .I0(zero_signal),
         .I1(not_zero),
         .Sel(bneE),
@@ -147,7 +146,7 @@ module DataPath(
 
     // Mux2x1 for choosing (A1)
     wire [2:0] A1;
-    Mux2x1 mux_a1(
+    Mux2x1 #(3) mux_a1(
         .I0(instructionToDecode[11: 9]),
         .I1(instructionToDecode[5: 3]),
         .Sel(RtypeD),
@@ -155,7 +154,7 @@ module DataPath(
     );
     // Mux2x1 for choosing (A3)
     wire [2: 0] mux_a3_out;
-    Mux2x1 mux_a3(
+    Mux2x1 #(3) mux_a3(
         .I0(instructionToDecode[8: 6]),
         .I1(instructionToDecode[11: 9]),
         .Sel(RtypeD),
@@ -200,7 +199,7 @@ wire [15:0] alu_out;
 
     // assign zero_signal = zero_signal_alu;
     assign zero_signal = zero_signal_alu;
-    assign write_on_memory_data = reg_out2;
+
 
     // Mux2x1 for choosing (WD3)
     wire [15: 0] mux_wd3_1_out;

@@ -17,7 +17,7 @@ output reg [15:0] RD2 // Read Data Register
     reg [15:0] RegisterFile [7:0];
 
     // Write Operation
-    always @(posedge clk or posedge rst) begin
+    always @(negedge clk or posedge rst) begin
         if (rst) begin
             // Reset all registers to 0
             for (i = 0; i < 8; i = i + 1) begin
@@ -31,47 +31,63 @@ output reg [15:0] RD2 // Read Data Register
 
     // Read Operation
     always @* begin
-        RD1 <= RegisterFile[A1];
-        RD2 <= RegisterFile[A2];
+        if (!clk) begin
+            RD1 = RegisterFile[A1];
+            RD2 = RegisterFile[A2];
+        end
     end
 
 endmodule
 
 module ALU(
-    input [15:0] R1, 
-    input [15:0] R2, 
-    input logic [2:0] alucontrol, 
-    output logic [15:0] Answer,
-    output logic zeroflag
+    input [15:0] R1,
+    input [15:0] R2,
+    input [2:0] alucontrol,
+    output [15:0] Answer,
+    output zeroflag
 );
-    always @* begin 
-        case (alucontrol)
-            3'b000: Answer = R1 & R2;   // AND
-            3'b001: Answer = R1 + R2;  // Add
-            3'b010: Answer = R2 - R1;  // Subtract
-            3'b011: Answer = R2 << R1; // Shift Left Logical
-            3'b100: Answer = R2 >> R1; // Shift Right Logical
-            default: Answer = 16'bxxxxxxxxxxxxxx; // Default to addition
-        endcase
 
-        // Set zeroflag if the result is 0
-        if (Answer == 0)
-            zeroflag = 1; 
-        else 
-            zeroflag = 0; 
-    end
-endmodule 
+    // Intermediate signals for operations
+    wire [15:0] and_result;
+    wire [15:0] add_result;
+    wire [15:0] sub_result;
+    wire [15:0] sll_result;
+    wire [15:0] srl_result;
 
-module Mux4x2(
-    input [15:0] in1,
-    input [15:0] in2,
-    input [15:0] in3,
-    input [15:0] in4,
+    // Perform operations
+    assign and_result = R1 & R2;       // AND
+    assign add_result = R1 + R2;       // Add
+    assign sub_result = R2 - R1;       // Subtract
+    assign sll_result = R2 << R1[3:0]; // Shift Left Logical (limited to 4 bits for shift)
+    assign srl_result = R2 >> R1[3:0]; // Shift Right Logical (limited to 4 bits for shift)
+
+    // Multiplexer to select the operation based on alucontrol
+    assign Answer = (alucontrol == 3'b000) ? and_result :
+                    (alucontrol == 3'b001) ? add_result :
+                    (alucontrol == 3'b010) ? sub_result :
+                    (alucontrol == 3'b011) ? sll_result :
+                    (alucontrol == 3'b100) ? srl_result :
+                    16'bxxxxxxxxxxxxxxxx;  // Default case
+
+    // Zero flag logic
+    assign zeroflag = (Answer == 16'b0);
+
+endmodule
+
+
+
+module Mux4x2 #(
+    parameter WIDTH = 16
+)(
+    input [WIDTH-1:0] in1,
+    input [WIDTH-1:0] in2,
+    input [WIDTH-1:0] in3,
+    input [WIDTH-1:0] in4,
     input [1:0] sel,
-    output [15:0] out
+    output [WIDTH-1:0] out
 );
 
-    reg [15:0] mux_out;
+    reg [WIDTH-1:0] mux_out;
 
     always @(*) begin
         case(sel)
@@ -86,11 +102,13 @@ module Mux4x2(
 
 endmodule
 
-module Mux2x1 (
+module Mux2x1 #(
+    parameter WIDTH = 16
+)(
     input Sel, // Select Signal
-    input [15: 0] I0, // Input 0
-    input [15: 0] I1, // Input 1
-    output reg [15: 0] out // Output Result
+    input [WIDTH-1: 0] I0, // Input 0
+    input [WIDTH-1: 0] I1, // Input 1
+    output reg [WIDTH-1: 0] out // Output Result
 );
 
     always @ (*) begin
@@ -140,10 +158,6 @@ endmodule
 
 
 
-
-
-
-
 module Adder(input [15:0] In1, input [15:0] In2, output [15:0] out);
     assign out    = In1 + In2;
 endmodule
@@ -152,4 +166,3 @@ endmodule
 module Concat(input [6:0] in1, input [8:0] in2, output [15:0] out);
     assign out = {in1, in2};
 endmodule
-

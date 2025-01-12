@@ -5,13 +5,17 @@ module PCFetch (
     input StallF,
     output reg [15:0] pc_out
 );
-
     always @(posedge clk or posedge rst) begin
+
+        
         if (rst) begin
             pc_out <= 16'h0000;
         end 
-        if (StallF == 0) begin
+        else if (StallF == 0) begin
             pc_out <= pc_next;
+        end
+        else begin
+            pc_out <= pc_out;
         end
     end
 
@@ -73,9 +77,22 @@ always @(posedge CLK or posedge Reset) begin
         WriteToMEMOut <= WriteToMEM;
         aluControlOut <= AluControl;
     end
-    // If StallD is high, outputs retain their previous values (no updates)
-end
+    else begin
+        // If StallD is high, outputs retain their previous values (no updates)
+        InstructionOut <= InstructionOut;
+        ForSignalOut <= ForSignalOut;
+        LoadOut <= LoadOut;
+        RTypeOut <= RTypeOut;
+        LogicalOut <= LogicalOut;
+        WriteToRegOut <= WriteToRegOut;
+        IMMOut <= IMMOut;
+        BNEOut <= BNEOut;
+        BranchOut <= BranchOut;
+        WriteToMEMOut <= WriteToMEMOut;
+        aluControlOut <= aluControlOut;
 
+    end
+end
 endmodule
 
 
@@ -119,18 +136,18 @@ module ExecuteStage(
 
     always @ (posedge clk or posedge rst) begin
         if (rst || FlushE) begin
-            out1out = 16'h0000;
-            out2out = 16'h0000;
-            wb1out = 16'h0000;
-            extout = 16'h0000;
-            forSignalOut = 0;
-            writeRegOut = 0;
-            aluControlOut = 3'b000;
-            BNEOut = 0;
-            IMMOut = 0;
-            branchOut = 0;
-            writeMemoryOut = 0;
-            loadOut = 0;
+            out1out <= 16'h0000;
+            out2out <= 16'h0000;
+            wb1out <= 16'h0000;
+            extout <= 16'h0000;
+            forSignalOut <= 0;
+            writeRegOut <= 0;
+            aluControlOut <= 3'b000;
+            BNEOut <= 0;
+            IMMOut <= 0;
+            branchOut <= 0;
+            writeMemoryOut <= 0;
+            loadOut <= 0;
         end else begin
             out1out <= out1in;
             out2out <= out2in;
@@ -211,9 +228,9 @@ module WriteBackStage(
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            DataOut = 16'h0000;
-            WB3out = 16'h0000;
-            writeRegOut = 0;
+            DataOut <= 16'h0000;
+            WB3out <= 16'h0000;
+            writeRegOut <= 0;
         end else begin
             DataOut <= DataIn;
             WB3out <= WB3in;

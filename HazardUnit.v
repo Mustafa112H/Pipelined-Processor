@@ -1,46 +1,42 @@
-
-
 module HazardUnit(
-    input [2:0] A,          
-    input [2:0] B,          
-    input [2:0] WB2,   
-    input RegWriteM,         
-    input [2:0] WB3,   
-    input RegWriteW,      
-    input BranchD,
-    input ForSignalD,   
-    output [1:0] ForwardA,   
-    output [1:0] ForwardB,  
-    output reg StallF,       // Stall signal for Fetch stage
-    output reg StallD,       // Stall signal for Decode stage
-    output reg FlushE        // Flush signal for Execute stage
+    input [2:0] A,           // Source Register A
+    input [2:0] B,           // Source Register B
+    input [2:0] WB2,        // Write-Back Register in MEM stage
+    input RegWriteM,         // Write-Back Enable in MEM stage
+    input [2:0] WB3,         // Write-Back Register in WB stage
+    input RegWriteW,         // Write-Back Enable in WB stage
+    input BranchD,           // Branch Signal in Decode stage
+    input ForSignalD,        // Forwarding Signal in Decode stage
+    output reg [1:0] ForwardA, // Forwarding for Source A
+    output reg [1:0] ForwardB, // Forwarding for Source B
+    output reg Stall,       // Stall Fetch Stage
+    input LoadM    // Load Signal in MEM stage
 );
 
-// Forwarding for (First Source Register in Decode stag
-assign ForwardA = 
-    (A !=0 && A == WB2 && RegWriteM) ? 2'b10 :   // Forward data from MEM stage
-    (A !=0 && WB3 && RegWriteW) ? 2'b01 :   // Forward data from WB stage
-    2'b00;  // No forwarding (default)
+    // Forwarding Logic for Source Registers
+    always @(*) begin
+        ForwardA = 
+            (A != 0 && A == WB2 && RegWriteM) ? 2'b01 : // Forward from MEM stage
+            (A != 0 && A == WB3 && RegWriteW) ? 2'b10 : // Forward from WB stage
+            2'b00; // No forwarding (default)
 
-// Forwarding for (Second Source Register)
-assign ForwardB = 
-    (B!=0 && B == WB2 && RegWriteM) ? 2'b10 :   // Forward data from MEM stage
-    (B!=0 && B == WB3 && RegWriteW) ? 2'b01 :   // Forward data from WB stage
-    2'b00;  // No forwarding (default)
+        ForwardB = 
+            (B != 0 && B == WB2 && RegWriteM) ? 2'b01 : // Forward from MEM stage
+            (B != 0 && B == WB3 && RegWriteW) ? 2'b10 : // Forward from WB stage
+            2'b00; // No forwarding (default)
+    end
 
-// Load-use hazard detection
-wire lwstall;
-assign lwstall = 0;
+    // Load-Use Hazard Detection
+    wire lwstall;
+    assign lwstall = (LoadM && ((WB2 == A) || (WB2 == B)));
 
-wire branchstall;
-assign branchstall = BranchD||ForSignalD;  // Stall on branch until resolved in EX stage
+    // Branch Hazard Detection
+    wire branchstall;
+    assign branchstall = BranchD || ForSignalD;
 
-// Combine stalling conditions
-always @(*) begin
-    StallF = lwstall || branchstall;   // Stall fetch stage
-    StallD = lwstall || branchstall;   // Stall decode stage
-    FlushE = branchstall;   // Flush execute stage if hazard detected
-end
+    // Combine Stalling and Flushing Conditions
+    always @(*) begin
+        Stall = lwstall || branchstall; // Stall Fetch stage
+    end
 
 endmodule
-

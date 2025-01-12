@@ -1,4 +1,3 @@
-
 `timescale 1ns / 1ps
 `include "Control.v"
 `include "Components.v"
@@ -92,9 +91,9 @@ module MainProcessor(
     wire StallF;       // Stall signal for Fetch stage
     wire StallD, FlushE; 
     wire [15:0]instructionToDecode;
-    HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,StallF,StallD,FlushE);
+    HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,Stall,LoadM);
     controller c(instr[15:12],instr[2:0],ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM,AluControl);
-    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,WriteToMemM, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,StallF,StallD,FlushE);
+    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,WriteToMemM, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,Stall, LoadM);
 
 endmodule
 
