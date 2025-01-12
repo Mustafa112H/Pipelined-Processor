@@ -30,7 +30,11 @@ module DataPath(
     input [1:0] ForwardA,
     input [1:0] ForwardB,
     input Stall,
-    output [2:0] WB1
+    output [2:0] WB1,
+    output WriteToMemoryM,
+    output loadE,
+    output writeToRegW,
+    output LoadM
 );
 
     // PC Handling
@@ -55,17 +59,17 @@ module DataPath(
         wire [15:0] out1, out2; 
     Mux4x2 FWA(
         .in1(reg_out1),
-        .in2(DataOut),
-        .in3(WBData),
-        .in4(16'h0000),
+        .in2(alu_out),
+        .in3(DataOut),
+        .in4(mux_wd3_2_out),
         .sel(ForwardA),
         .out(out1)
     );
     Mux4x2 FWB(
         .in1(reg_out2),
-        .in2(DataOut),
-        .in3(WBData),
-        .in4(16'h0000),
+        .in2(alu_out),
+        .in3(DataOut),
+        .in4(mux_wd3_2_out),
         .sel(ForwardB),
         .out(out2)
     );

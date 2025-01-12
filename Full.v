@@ -39,7 +39,7 @@ module Top_tb;
     initial begin
 
         // Dump waveforms to a VCD file
-        $dumpfile("waveform.vcd"); // Specify VCD file name
+        $dumpfile("waveform7.vcd"); // Specify VCD file name
         $dumpvars(0, Top_tb); // Dump all signals in the module hierarchy
 
 
@@ -73,7 +73,7 @@ module MainProcessor(
     input rst, 
     output [15:0] PC, 
     input [15:0] instr, 
-    output WriteToMemM, 
+    output memM, 
     input [15:0] readData,
     output [15:0]AluOut, 
     output [15: 0] WriteData);
@@ -90,9 +90,9 @@ module MainProcessor(
     wire [1:0] ForwardB;  
     wire Stall; 
     wire [15:0]instructionToDecode;
-    HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,Stall,WriteToMEM,WB1);
+    HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,Stall,loadE,WB1,writeToRegW,LoadM);
     controller c(instr[15:12],instr[2:0],ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM,AluControl);
-    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,WriteToMemM, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,Stall,WB1 );
+    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,writeToMemE, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,Stall,WB1,memM,loadE,writeToRegW,LoadM );
 
 endmodule
 
