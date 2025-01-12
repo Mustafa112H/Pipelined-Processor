@@ -13,7 +13,7 @@ module DataPath(
     input bne,
     input branch_signal,
     input write_to_mem,
-    output WriteToMemoryM,
+    output WriteMemoryE,
     input [2:0] alu_control,
     input [15:0] RD, // data from memory
     input [15: 0] inst_in,
@@ -24,13 +24,13 @@ module DataPath(
     output [2:0] A1,
     output [2:0] A2,
     output [2:0] WB2,
-    output writeToRegM,
+    output writeToRegE,
     output [2:0] WB3,
-    output writeToRegW,
+    output writeToRegM,
     input [1:0] ForwardA,
     input [1:0] ForwardB,
     input Stall,
-    output loadE
+    output [2:0] WB1
 );
 
     // PC Handling

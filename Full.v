@@ -84,16 +84,15 @@ module MainProcessor(
     wire [2:0] B;          
     wire [2:0] WB2;   
     wire RegWriteM;
-    wire [2:0] WB3;   
+    wire [2:0] WB3,WB1;   
     wire RegWriteW;
     wire [1:0] ForwardA;   
     wire [1:0] ForwardB;  
-    wire StallF;       // Stall signal for Fetch stage
-    wire StallD, FlushE; 
+    wire Stall; 
     wire [15:0]instructionToDecode;
-    HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,Stall,LoadM);
+    HazardUnit unit(A, B, WB2, RegWriteM,WB3, RegWriteW, Branch,ForSignal,ForwardA,ForwardB,Stall,WriteToMEM,WB1);
     controller c(instr[15:12],instr[2:0],ForSignal, UpdateRR, JMP, SelectPCSrc, Load, Rtype, Logical, WriteToReg,IMM, BNE,Branch,WriteToMEM,AluControl);
-    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,WriteToMemM, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,Stall, LoadM);
+    DataPath data(clk, rst, SelectPCSrc, ForSignal, UpdateRR, JMP, Load, Rtype, Logical, WriteToReg, IMM, BNE, Branch, WriteToMEM,WriteToMemM, AluControl, readData, instr,instructionToDecode, PC, AluOut, WriteData,A, B, WB2, RegWriteM,WB3, RegWriteW,ForwardA,ForwardB,Stall,WB1 );
 
 endmodule
 
